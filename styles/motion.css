@@ -1,0 +1,174 @@
+/*
+  Daybreak Solar motion system.
+  The theme is daybreak and the energy line: the hero opens with a sunrise, a sun rides the header
+  reading line, the lime trace carries pulses of light through the hero and the energy cutaway,
+  switches on Sun → Home → Battery in turn, fills the installation steps and turns the sunburst
+  behind the assessment. Photos brighten into view like first light.
+
+  Everything is progressive. Scroll reveals only hide content when the head script has added
+  `.motion` (motion allowed + IntersectionObserver available), and motion.js must confirm it
+  started within 3s or the class is removed. Reduced-motion visitors get the static design.
+*/
+
+:root {
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-response: cubic-bezier(.25, .65, .3, 1);
+}
+
+/* ---------- Header: reading line + scrolled state (position cue, runs for everyone) ---------- */
+
+.scroll-progress { height: 3px; background: linear-gradient(90deg, #6f9300, var(--lime)); box-shadow: 0 0 10px #d9fb4880; }
+.site-header { transition: box-shadow .3s ease; }
+.site-header[data-scrolled] { box-shadow: 0 .7rem 1.8rem #0814273d; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+
+  /* ---------- Hero: sunrise choreography ---------- */
+
+  .hero-media { overflow: hidden; }
+  .hero-media img { animation: daybreak 2.2s var(--ease-out) both; }
+  .hero-sun { animation: sunrise 2.6s var(--ease-out) .1s both; }
+  .hero h1 > span { overflow: clip; padding-bottom: .22em; margin-bottom: -.22em; }
+  .hero h1 > span > span { display: block; animation: line-up 1.15s var(--ease-out) .35s both; }
+  .hero h1 > span + span > span { animation-delay: .5s; }
+  .hero h1 em { display: inline-block; animation: power-word 1.4s ease 1.25s both; }
+  .hero-request:not(:focus) { animation: rise-in .9s var(--ease-out) .85s both; }
+  .hero-trace path:not(.trace-pulse) { stroke-dasharray: 1; animation: trace-draw 1.7s var(--ease-out) .45s both; }
+  .hero-trace .trace-pulse { animation: pulse-run 3.4s linear 2.2s infinite; }
+  .band-trace path { stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--flow-progress, 1)); }
+  .trace-live { stroke-dashoffset: calc(1 - var(--flow-progress, 1)); }
+  .energy-visual[data-full] .trace-pulse { animation: pulse-run 2.8s linear infinite; }
+  [data-offscreen] :is(.trace-pulse, .sunburst) { animation-play-state: paused !important; }
+  .sunburst { animation: spin 90s linear infinite; }
+
+  /* ---------- Interaction feedback ---------- */
+
+  .site-header[data-menu-ready] .site-nav:not([hidden]):not(:focus-within) { animation: menu-arrive .25s var(--ease-response); }
+  :is(.button, .filters button, .chip span, .menu-toggle) {
+    transition: background-color .22s ease, border-color .22s ease, color .22s ease,
+      translate .2s var(--ease-response), scale .16s var(--ease-response), box-shadow .3s var(--ease-out);
+  }
+  :is(.button, .filters button, .chip span):active { scale: .97; }
+  .button::after {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    content: "";
+    translate: -110% 0;
+    background: linear-gradient(105deg, transparent 25%, #ffffff8a 50%, transparent 70%);
+  }
+  .photo-link img { transition: scale .9s var(--ease-out), filter .6s ease; }
+  .photo-link .icon, .solution-list .icon { transition: translate .4s var(--ease-out), rotate .5s var(--ease-out), scale .4s var(--ease-out); }
+  .photo-link:focus-visible .icon { translate: .3rem 0; }
+  .photo-link:focus-visible img { scale: 1.05; }
+
+  /* Essentials switch on: the chip pops and its icon glows; the meter cells charge in. */
+  .chip input:checked + span { animation: power-on .5s var(--ease-out); }
+  .chip input:checked + span .icon { filter: drop-shadow(0 0 4px #ffffffd0); }
+  .essentials-meter span { transition: background-color .35s ease, box-shadow .35s ease; }
+  .essentials-meter span[data-on] { animation: charge .55s var(--ease-out); }
+
+  /* Installation steps: the line fills with a bright head and each icon powers on. */
+  .process-flow::after { background: linear-gradient(180deg, #739900 calc(100% - 3rem), var(--lime)); box-shadow: 0 0 10px #a8d600; }
+  .flow-icon { transition: background-color .35s ease, border-color .35s ease, box-shadow .5s ease, scale .5s var(--ease-out); }
+  .process-flow li[data-active] .flow-icon { scale: 1.08; box-shadow: 0 0 0 .35rem #d9fb4847, 0 0 1.4rem #c8f53a8c; animation: power-on .6s var(--ease-out); }
+  .process-flow li[data-active] h3 { color: #2f3f00; }
+
+  .faq-list details[open] p, .plan-result:not([hidden]) { animation: rise-in .4s var(--ease-out); }
+  .faq-list summary::after { transition: rotate .35s var(--ease-out); }
+  .faq-list details[open] summary::after { rotate: 180deg; }
+  .assessment-form select.is-chosen { animation: chosen 1.4s var(--ease-out); }
+
+  @media (hover: hover) and (pointer: fine) {
+    .button:hover:not(:disabled) { translate: 0 -2px; box-shadow: 0 .7rem 1.6rem #06142b3d, 0 0 1.2rem #d9fb4859; }
+    .button:hover:not(:disabled)::after { translate: 110% 0; transition: translate .75s var(--ease-out); }
+    .photo-link:hover img { scale: 1.06; filter: saturate(1.12); }
+    .photo-link:hover .icon { translate: .3rem 0; }
+    .solution-list a:hover .icon { scale: 1.15; rotate: -8deg; }
+    .chip:hover span { translate: 0 -2px; box-shadow: 0 .4rem .8rem #11203116; }
+  }
+}
+
+/* ---------- Scroll reveals (only when .motion is set) ---------- */
+
+.motion [data-reveal]:not(.reveal-done) {
+  transition:
+    opacity .9s var(--ease-out) var(--reveal-delay, 0ms),
+    translate 1.1s var(--ease-out) var(--reveal-delay, 0ms),
+    scale 1.1s var(--ease-out) var(--reveal-delay, 0ms),
+    clip-path 1.25s var(--ease-out) var(--reveal-delay, 0ms);
+}
+.motion [data-reveal]:not(.is-revealed) { opacity: 0; translate: 0 3rem; }
+.motion [data-reveal="zoom"]:not(.is-revealed) { translate: 0 2rem; scale: .92; }
+
+/* Photos open like a blind at first light and brighten from dawn blue. */
+.motion [data-reveal="media"]:not(.reveal-done) { clip-path: inset(0 round var(--radius)); }
+.motion [data-reveal="media"]:not(.is-revealed) { opacity: 1; translate: none; clip-path: inset(100% 0 0 0 round var(--radius)); }
+.motion [data-reveal="media"][data-from="left"]:not(.is-revealed) { clip-path: inset(0 100% 0 0 round var(--radius)); }
+.motion [data-reveal="media"][data-from="right"]:not(.is-revealed) { clip-path: inset(0 0 0 100% round var(--radius)); }
+.motion [data-reveal="media"][data-from="top"]:not(.is-revealed) { clip-path: inset(0 0 100% 0 round var(--radius)); }
+.motion [data-reveal="media"]:not(.reveal-done) img { transition: scale 1.7s var(--ease-out) var(--reveal-delay, 0ms), filter 1.6s ease var(--reveal-delay, 0ms); }
+.motion [data-reveal="media"]:not(.is-revealed) img { scale: 1.25; filter: brightness(.45) saturate(.55) hue-rotate(-18deg); }
+
+/* Heading lines grow after the heading lands. */
+.motion .section-heading[data-reveal] h2::after { transform-origin: left; transition: scale 1s var(--ease-out) .35s; }
+.motion .section-heading[data-reveal]:not(.is-revealed) h2::after { scale: 0 1; }
+
+/* Energy cutaway: badges switch on as the current reaches them. */
+.motion .energy-badge { transition: opacity .4s ease, scale .6s var(--ease-out), box-shadow .6s ease; }
+.motion .energy-badge:not([data-lit]) { opacity: 0; scale: .6; }
+.motion .energy-badge[data-lit] { box-shadow: 0 0 0 .3rem #d9fb4833, 0 0 1.2rem #d9fb4899; }
+.motion .energy-points circle { transition: r .4s var(--ease-out); }
+.motion .energy-visual[data-full] .energy-points circle { r: 7; }
+.motion .energy-visual[data-full] .trace-pulse { opacity: 1; }
+.motion .hero-trace .trace-pulse { opacity: 1; }
+
+/* ---------- Parallax (motion.js sets --shift and --drift) ---------- */
+
+.motion .hero-media { translate: 0 calc(var(--shift, 0) * 24%); }
+.motion .hero-sun { translate: 0 calc(var(--shift, 0) * -35%); }
+.motion .hero-copy { translate: 0 calc(var(--shift, 0) * -4rem); opacity: calc(1 - var(--shift, 0) * 1.3); }
+.motion .hero-trace { translate: calc(var(--shift, 0) * -6rem) 0; }
+.motion .dusk-media.reveal-done img { scale: 1.08; translate: 0 calc(var(--drift, 0) * 4%); }
+
+/* ---------- Cards: tilt toward the pointer with a lime spotlight (fine pointers only) ---------- */
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .motion :is(.setup-tile, .system-card a) { transition: transform .6s var(--ease-out), box-shadow .45s ease, border-color .3s ease; }
+  .motion :is(.setup-tile.reveal-done, .system-card.reveal-done a):hover {
+    transform: perspective(1100px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(-6px);
+    box-shadow: 0 1.6rem 3rem #06142b4d;
+  }
+  /* Painted above the photo; tile labels come later in the DOM so they stay on top. */
+  .motion :is(.setup-tile, .system-card a)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(22rem circle at var(--mx, 50%) var(--my, 50%), #d9fb4830, transparent 45%);
+    opacity: 0;
+    transition: opacity .4s ease;
+    pointer-events: none;
+  }
+  .motion :is(.setup-tile, .system-card a):hover::before { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- Keyframes ---------- */
+
+@keyframes daybreak { from { scale: 1.18; filter: brightness(.35) saturate(.5) hue-rotate(-22deg); } }
+@keyframes sunrise { from { opacity: 0; transform: translateY(35%) scale(.7); } }
+@keyframes line-up { from { translate: 0 135%; rotate: 3deg; } }
+@keyframes power-word { 0%, 100% { text-shadow: none; } 40% { text-shadow: 0 0 .35em #d9fb48d0; } }
+@keyframes rise-in { from { opacity: 0; translate: 0 1.5rem; } }
+@keyframes trace-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes pulse-run { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes spin { to { rotate: 1turn; } }
+@keyframes menu-arrive { from { opacity: 0; translate: 0 -.4rem; } }
+@keyframes power-on { 0% { scale: .9; } 45% { scale: 1.12; } 100% { scale: 1; } }
+@keyframes charge { from { background-color: #f4ffbe; box-shadow: 0 0 .7rem #d9fb48; } }
+@keyframes chosen { 0%, 35% { background-color: #f4ffbe; border-color: var(--navy); box-shadow: 0 0 0 4px #0b192f33; } }
